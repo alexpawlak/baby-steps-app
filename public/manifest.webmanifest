@@ -1,0 +1,17 @@
+{
+  "name": "Baby Steps",
+  "short_name": "Baby Steps",
+  "description": "A gentle, shared family journal for early baby milestones.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f0e6",
+  "theme_color": "#f6f0e6",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
