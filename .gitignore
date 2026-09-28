@@ -3,3 +3,6 @@ dist/
 .playwright-cli/
 *.tsbuildinfo
 .DS_Store
+
+# Local Netlify folder
+.netlify
