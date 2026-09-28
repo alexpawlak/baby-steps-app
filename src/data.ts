@@ -17,8 +17,8 @@ export const sources: Record<SourceId, { short: string; label: string; url: stri
 // start ages come from AAP and NHS guidance and are approximate.
 export const milestones: Milestone[] = [
   // Birth: reflexes and first behaviours
-  { id: "nb_reflex_rooting", domain: "movement_physical", text: "Turns toward your touch on their cheek, looking for a feed", fromDays: 0, toDays: 7, source: "aap_reflexes" },
-  { id: "nb_reflex_sucking", domain: "movement_physical", text: "Sucks when something touches the roof of the mouth", fromDays: 0, toDays: 7, source: "aap_reflexes" },
+  { id: "nb_reflex_rooting", domain: "movement_physical", text: "Turns toward your touch on their cheek, looking for a feed", fromDays: 0, toDays: 7, source: "aap_reflexes", image: "milestones/nb_reflex_rooting.webp" },
+  { id: "nb_reflex_sucking", domain: "movement_physical", text: "Sucks when something touches the roof of the mouth", fromDays: 0, toDays: 7, source: "aap_reflexes", image: "milestones/nb_reflex_sucking.webp" },
   { id: "nb_reflex_grasp", domain: "movement_physical", text: "Grips your finger tightly", fromDays: 0, toDays: 7, source: "aap_reflexes" },
   { id: "nb_reflex_startle", domain: "movement_physical", text: "Startles and flings arms out at a sudden noise or movement", fromDays: 0, toDays: 7, source: "aap_reflexes" },
   { id: "nb_reflex_stepping", domain: "movement_physical", text: "Makes stepping movements when held upright with feet on a surface", fromDays: 0, toDays: 7, source: "aap_reflexes" },

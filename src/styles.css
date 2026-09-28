@@ -33,14 +33,14 @@ h1 em, h2 em { color: #df6a4b; font-weight: 500; }
 .list-heading span { color: #d86144; font-family: "Avenir Next", "Nunito Sans", ui-rounded, sans-serif; font-size: 13px; font-weight: 900; letter-spacing: 0; }
 .milestone-list + .list-heading { margin-top: 34px; }
 .milestone-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-.milestone-card { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 14px 14px 14px 13px; border: 1px solid #e6ddcf; border-radius: 15px; background: #fffcf5; color: #2c463a; text-align: left; box-shadow: 0 2px 0 rgba(34, 57, 46, .025); transition: border-color .15s ease, background .15s ease; }
+.milestone-card { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 14px 14px 16px; border: 1px solid #e6ddcf; border-radius: 15px; background: #fffcf5; color: #2c463a; text-align: left; box-shadow: 0 2px 0 rgba(34, 57, 46, .025); transition: border-color .15s ease, background .15s ease; }
 .milestone-card:hover { border-color: #cdbf9e; }
 .milestone-card:focus-visible { outline: 2px solid #e26e4f; outline-offset: 2px; }
 .milestone-card.checked { background: #f1ede3; color: #5b6c62; }
-.check-box { flex: 0 0 auto; display: grid; place-items: center; width: 24px; height: 24px; margin-top: 1px; border: 2px solid #bcae8c; border-radius: 8px; color: #fffdf8; font-size: 14px; font-weight: 900; }
+.check-box { flex: 0 0 auto; display: grid; place-items: center; width: 28px; height: 28px; margin-left: auto; border: 2px solid #bcae8c; border-radius: 50%; color: #fffdf8; font-size: 14px; font-weight: 900; }
 .milestone-card:hover .check-box { border-color: #7cab7e; }
-.checked .check-box { border-color: #5f9463; background: #5f9463; }
-.milestone-body { display: grid; gap: 6px; min-width: 0; }
+.checked .check-box, .has-image.checked .check-box { border-color: #5f9463; background: #5f9463; }
+.milestone-body { display: grid; flex: 1; gap: 6px; min-width: 0; }
 .milestone-text { font-size: 15px; font-weight: 650; line-height: 1.25; }
 .milestone-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: #748278; font-size: 12px; font-weight: 700; }
 .domain-dot { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; color: #2c463a; font-size: 11px; }
@@ -61,12 +61,56 @@ h1 em, h2 em { color: #df6a4b; font-weight: 500; }
 .care-note .sources-heading { margin-top: 10px; font-weight: 800; color: #334a3e; }
 .sources { margin: 4px 0 0; padding-left: 14px; font-size: 11px; line-height: 1.5; }
 .sources a { color: #52675c; }
-.milestone-image { flex: 0 0 auto; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #f1ead9; }
-.checked .milestone-image { opacity: .7; }
+/* Illustrated cards: centred picture on top, text below, tick floats in the corner. */
+.milestone-card.has-image { position: relative; flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; }
+.milestone-figure { display: flex; justify-content: center; padding: 22px 0 6px; background: linear-gradient(#f4ecdb 58%, transparent 58%); }
+.milestone-image { display: block; width: min(184px, 56%); height: auto; aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: #f4ecdb; box-shadow: 0 0 0 5px #fffcf5, 0 8px 22px rgba(68, 56, 38, .14); transition: box-shadow .25s ease; }
+.has-image .milestone-body { justify-items: center; padding: 10px 20px 18px; text-align: center; }
+.has-image .milestone-meta { justify-content: center; }
+.has-image .milestone-text { font-size: 16px; }
+.milestone-card.has-image .check-box { position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(255, 252, 245, .92); box-shadow: 0 2px 8px rgba(33, 61, 50, .1); }
+.checked .milestone-figure { display: flex; justify-content: center; padding: 22px 0 6px; background: linear-gradient(#f4ecdb 58%, transparent 58%); }
+.checked .milestone-image { display: block; width: min(184px, 56%); height: auto; aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: #f4ecdb; box-shadow: 0 0 0 5px #fffcf5, 0 8px 22px rgba(68, 56, 38, .14); transition: box-shadow .25s ease; }
 .care-note strong { color: #334a3e; }
 @media (min-width: 680px) {
   .app-shell { box-shadow: 0 0 0 1px rgba(33, 61, 50, .08), 0 22px 70px rgba(68, 56, 38, .12); }
   .masthead { padding: 30px 34px; }
   .content-section { padding: 36px 34px 44px; }
   .care-note { margin: 0 34px 34px; }
+}
+
+/* Check feedback: pop the box, hold, fold the card away, land it in "Checked". */
+.milestone-list > li { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .32s cubic-bezier(.3, 0, .2, 1), opacity .24s ease, margin-bottom .32s cubic-bezier(.3, 0, .2, 1); }
+.milestone-list > li.leaving { grid-template-rows: 0fr; opacity: 0; margin-bottom: -7px; }
+.card-fold { min-height: 0; }
+.leaving .card-fold { overflow: hidden; }
+.milestone-card:active { transform: scale(.985); }
+.milestone-card { transition: border-color .15s ease, background .25s ease, transform .12s ease; }
+.milestone-card.celebrating { border-color: #b8d5b5; background: #eef5ea; }
+.celebrating .check-box { position: relative; animation: check-pop .42s cubic-bezier(.3, 1.6, .5, 1); }
+.celebrating .check-box::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #7cab7e; animation: check-ring .5s ease-out forwards; }
+.celebrating .timing { animation: fade-up .3s ease-out; }
+.arrived .milestone-card { animation: arrive .38s cubic-bezier(.2, .8, .2, 1); }
+.progress-orbit span.bump { animation: count-bump .45s cubic-bezier(.3, 1.6, .5, 1); }
+
+.toast-region { position: fixed; left: 0; right: 0; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 10; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 10px; max-width: 480px; width: 100%; padding: 12px 12px 12px 15px; border-radius: 16px; background: #213d32; color: #f6f0e6; font-size: 13px; line-height: 1.35; box-shadow: 0 12px 34px rgba(33, 61, 50, .28); pointer-events: auto; animation: toast-in .34s cubic-bezier(.2, .9, .3, 1.15); }
+.toast-spark { color: #f0c962; animation: check-pop .5s cubic-bezier(.3, 1.6, .5, 1); }
+.toast-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast-text strong { color: #fff; }
+.toast-undo { flex: 0 0 auto; padding: 6px 10px; border: 0; border-radius: 10px; background: rgba(246, 240, 230, .12); color: #f6f0e6; font-size: 12px; font-weight: 800; }
+.toast-undo:hover { background: rgba(246, 240, 230, .2); }
+.toast-undo:focus-visible { outline: 2px solid #f0c962; outline-offset: 2px; }
+
+@keyframes check-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes check-ring { from { transform: scale(1); opacity: .9; } to { transform: scale(1.9); opacity: 0; } }
+@keyframes fade-up { from { transform: translateY(4px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes arrive { from { transform: translateY(-10px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes count-bump { 0% { transform: rotate(28deg) scale(1); } 45% { transform: rotate(28deg) scale(1.35); color: #5f9463; } 100% { transform: rotate(28deg) scale(1); } }
+@keyframes toast-in { from { transform: translateY(24px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .milestone-list > li, .milestone-card { transition: none; }
+  .celebrating .check-box, .celebrating .check-box::after, .celebrating .timing, .arrived .milestone-card, .progress-orbit span.bump, .toast, .toast-spark { animation: none; }
+  .milestone-card:active { transform: none; }
 }

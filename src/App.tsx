@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { birthDate, domainMeta, milestones, sources } from "./data";
 import type { Checks, Milestone } from "./types";
 
 const storageKey = "baby-steps-checks";
 const legacyStorageKey = "baby-steps-prototype-observations";
+// Hold the card in its checked state, then fold it away before it moves lists.
+const celebrateMs = 520;
+const leaveMs = 320;
+const toastMs = 4500;
+
+type Toast = { id: string; text: string; timing: Timing; key: number };
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
 
 function readChecks(): Checks {
   try {
@@ -57,7 +67,26 @@ function checkedTiming(milestone: Milestone, age: number): Timing {
 
 export default function App() {
   const [checks, setChecks] = useState<Checks>(readChecks);
+  const [pending, setPending] = useState<Record<string, "celebrating" | "leaving">>({});
+  const [arrived, setArrived] = useState<string | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const timers = useRef(new Map<string, number[]>());
+  const toastTimer = useRef<number>(undefined);
   const age = ageInDays(new Date());
+
+  useEffect(() => () => {
+    timers.current.forEach((ids) => ids.forEach(clearTimeout));
+    clearTimeout(toastTimer.current);
+  }, []);
+
+  function later(id: string, ms: number, run: () => void) {
+    timers.current.set(id, [...(timers.current.get(id) ?? []), window.setTimeout(run, ms)]);
+  }
+
+  function cancelTimers(id: string) {
+    timers.current.get(id)?.forEach(clearTimeout);
+    timers.current.delete(id);
+  }
 
   const open = milestones
     .filter((milestone) => !checks[milestone.id])
@@ -66,8 +95,7 @@ export default function App() {
     .filter((milestone) => checks[milestone.id])
     .sort((a, b) => checks[b.id].localeCompare(checks[a.id]));
 
-  function save(next: Checks) {
-    setChecks(next);
+  function persist(next: Checks) {
     try {
       localStorage.setItem(storageKey, JSON.stringify(next));
     } catch {
@@ -75,13 +103,53 @@ export default function App() {
     }
   }
 
-  function check(id: string) {
-    save({ ...checks, [id]: new Date().toISOString() });
+  function save(next: Checks) {
+    setChecks(next);
+    persist(next);
+  }
+
+  function showToast(next: Toast | null) {
+    clearTimeout(toastTimer.current);
+    setToast(next);
+    if (next) toastTimer.current = window.setTimeout(() => setToast(null), toastMs);
+  }
+
+  function check(milestone: Milestone) {
+    const { id } = milestone;
+    if (pending[id]) return;
+    const checkedAt = new Date().toISOString();
+    const commit = () => {
+      setChecks((current) => {
+        const next = { ...current, [id]: checkedAt };
+        persist(next);
+        return next;
+      });
+      setPending(({ [id]: _done, ...rest }) => rest);
+      setArrived(id);
+      timers.current.delete(id);
+    };
+    showToast({ id, text: milestone.text, timing: checkedTiming(milestone, age), key: Date.now() });
+    if (prefersReducedMotion()) return commit();
+    setPending((current) => ({ ...current, [id]: "celebrating" }));
+    later(id, celebrateMs, () => setPending((current) => ({ ...current, [id]: "leaving" })));
+    later(id, celebrateMs + leaveMs, commit);
+  }
+
+  function undo(id: string) {
+    showToast(null);
+    cancelTimers(id);
+    setPending(({ [id]: _cancelled, ...rest }) => rest);
+    setChecks((current) => {
+      const { [id]: _removed, ...rest } = current;
+      persist(rest);
+      return rest;
+    });
   }
 
   function uncheck(id: string) {
     const { [id]: _removed, ...rest } = checks;
     save(rest);
+    if (toast?.id === id) showToast(null);
   }
 
   return (
@@ -91,7 +159,7 @@ export default function App() {
         <div className="age-chip"><span aria-hidden="true">✦</span>{formatAge(age)} old</div>
         <h1>A small record of<br /><em>growing, together.</em></h1>
         <div className="progress-row" aria-label={`${done.length} of ${milestones.length} milestones checked`}>
-          <div className="progress-orbit"><span>{done.length}</span><small>of {milestones.length}</small></div>
+          <div className="progress-orbit"><span key={done.length} className={arrived ? "bump" : undefined}>{done.length}</span><small>of {milestones.length}</small></div>
           <p><strong>Tap a milestone when you notice it.</strong><br />Every baby has their own pace.</p>
         </div>
       </section>
@@ -103,13 +171,16 @@ export default function App() {
         ) : (
           <ul className="milestone-list">
             {open.map((milestone) => {
-              const timing = openTiming(milestone, age);
+              const state = pending[milestone.id];
+              const timing = state ? checkedTiming(milestone, age) : openTiming(milestone, age);
               return (
-                <li key={milestone.id}>
-                  <button className="milestone-card" onClick={() => check(milestone.id)} aria-label={`Check: ${milestone.text}`}>
-                    <span className="check-box" aria-hidden="true" />
-                    <MilestoneBody milestone={milestone} timing={timing} />
-                  </button>
+                <li key={milestone.id} className={state === "leaving" ? "leaving" : undefined}>
+                  <div className="card-fold">
+                    <button className={`milestone-card${milestone.image ? " has-image" : ""}${state ? " checked celebrating" : ""}`} onClick={() => check(milestone)} aria-label={`Check: ${milestone.text}`} aria-pressed={Boolean(state)}>
+                      <MilestoneBody milestone={milestone} timing={timing} />
+                      <span className="check-box" aria-hidden="true">{state && "✓"}</span>
+                    </button>
+                  </div>
                 </li>
               );
             })}
@@ -124,14 +195,14 @@ export default function App() {
                 const checkedAt = new Date(checks[milestone.id]);
                 const checkedAge = ageInDays(checkedAt);
                 return (
-                  <li key={milestone.id}>
-                    <button className="milestone-card checked" onClick={() => uncheck(milestone.id)} aria-label={`Uncheck: ${milestone.text}`}>
-                      <span className="check-box" aria-hidden="true">✓</span>
+                  <li key={milestone.id} className={milestone.id === arrived ? "arrived" : undefined}>
+                    <button className={`milestone-card checked${milestone.image ? " has-image" : ""}`} onClick={() => uncheck(milestone.id)} aria-label={`Uncheck: ${milestone.text}`}>
                       <MilestoneBody
                         milestone={milestone}
                         timing={checkedTiming(milestone, checkedAge)}
                         detail={`${checkedAt.toLocaleDateString(undefined, { day: "numeric", month: "short" })} · at ${formatAge(checkedAge)}`}
                       />
+                      <span className="check-box" aria-hidden="true">✓</span>
                     </button>
                   </li>
                 );
@@ -140,6 +211,19 @@ export default function App() {
           </>
         )}
       </section>
+
+      <div className="toast-region" aria-live="polite">
+        {toast && (
+          <div className="toast" key={toast.key}>
+            <span className="toast-spark" aria-hidden="true">✦</span>
+            <span className="toast-text">
+              <strong>Noticed!</strong> {toast.text}
+            </span>
+            <span className={`timing ${toast.timing.tone}`}>{toast.timing.label}</span>
+            <button className="toast-undo" onClick={() => undo(toast.id)}>Undo</button>
+          </div>
+        )}
+      </div>
 
       <aside className="care-note">
         <span aria-hidden="true">✦</span>
@@ -161,7 +245,11 @@ function MilestoneBody({ milestone, timing, detail }: { milestone: Milestone; ti
   const meta = domainMeta[milestone.domain];
   return (
     <>
-    {milestone.image && <img className="milestone-image" src={`${import.meta.env.BASE_URL}${milestone.image}`} alt="" loading="lazy" width={64} height={64} />}
+    {milestone.image && (
+      <span className="milestone-figure">
+        <img className="milestone-image" src={`${import.meta.env.BASE_URL}${milestone.image}`} alt="" loading="lazy" width={512} height={512} />
+      </span>
+    )}
     <span className="milestone-body">
       <span className="milestone-text">{milestone.text}</span>
       <span className="milestone-meta">
