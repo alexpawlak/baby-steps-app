@@ -4,19 +4,15 @@ export type Domain =
   | "cognitive_learning"
   | "movement_physical";
 
-export type MilestoneStatus = "observed" | "emerging" | "not_yet";
-
 export type Milestone = {
   id: string;
   domain: Domain;
   text: string;
+  /** Typical age window, in days since birth. */
+  fromDays: number;
+  toDays: number;
   activity?: string;
 };
 
-export type Observation = {
-  milestoneId: string;
-  status: MilestoneStatus;
-  note?: string;
-  recordedAt: string;
-  recordedBy: "Mum" | "Dad";
-};
+/** Milestone id → ISO date it was checked. */
+export type Checks = Record<string, string>;
