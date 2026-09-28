@@ -57,7 +57,13 @@ h1 em, h2 em { color: #df6a4b; font-weight: 500; }
 .milestone-activity { color: #66766d; font-size: 12px; line-height: 1.4; }
 .empty-note { margin: 0; color: #748278; font-size: 14px; }
 
-.care-note { display: flex; gap: 9px; margin: 0 20px 30px; padding: 15px; border-radius: 14px; background: #e8dfcb; color: #52675c; }.care-note span { color: #e26e4f; }.care-note p { margin: 0; font-size: 11px; line-height: 1.45; }.care-note strong { color: #334a3e; }
+.care-note { display: flex; gap: 9px; margin: 0 20px 30px; padding: 15px; border-radius: 14px; background: #e8dfcb; color: #52675c; }.care-note span { color: #e26e4f; }.care-note p { margin: 0; font-size: 11px; line-height: 1.45; }
+.care-note .sources-heading { margin-top: 10px; font-weight: 800; color: #334a3e; }
+.sources { margin: 4px 0 0; padding-left: 14px; font-size: 11px; line-height: 1.5; }
+.sources a { color: #52675c; }
+.milestone-image { flex: 0 0 auto; width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #f1ead9; }
+.checked .milestone-image { opacity: .7; }
+.care-note strong { color: #334a3e; }
 @media (min-width: 680px) {
   .app-shell { box-shadow: 0 0 0 1px rgba(33, 61, 50, .08), 0 22px 70px rgba(68, 56, 38, .12); }
   .masthead { padding: 30px 34px; }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { birthDate, domainMeta, milestones } from "./data";
+import { birthDate, domainMeta, milestones, sources } from "./data";
 import type { Checks, Milestone } from "./types";
 
 const storageKey = "baby-steps-checks";
@@ -143,7 +143,15 @@ export default function App() {
 
       <aside className="care-note">
         <span aria-hidden="true">✦</span>
-        <p><strong>For gentle noticing, not diagnosing.</strong> Age ranges are approximate. If anything worries you, share your observations with your child’s doctor.</p>
+        <div>
+          <p><strong>For gentle noticing, not diagnosing.</strong> Age ranges are approximate. If anything worries you, share your observations with your child’s doctor.</p>
+          <p className="sources-heading">Sources</p>
+          <ul className="sources">
+            {Object.values(sources).map((source) => (
+              <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.label}</a></li>
+            ))}
+          </ul>
+        </div>
       </aside>
     </main>
   );
@@ -152,15 +160,19 @@ export default function App() {
 function MilestoneBody({ milestone, timing, detail }: { milestone: Milestone; timing: Timing; detail?: string }) {
   const meta = domainMeta[milestone.domain];
   return (
+    <>
+    {milestone.image && <img className="milestone-image" src={`${import.meta.env.BASE_URL}${milestone.image}`} alt="" loading="lazy" width={64} height={64} />}
     <span className="milestone-body">
       <span className="milestone-text">{milestone.text}</span>
       <span className="milestone-meta">
         <span className={`domain-dot ${meta.colour}`} title={meta.label} aria-hidden="true">{meta.symbol}</span>
         <span>{formatRange(milestone)}</span>
+        <span title={sources[milestone.source].label}>· {sources[milestone.source].short}</span>
         {detail && <span>· {detail}</span>}
         <span className={`timing ${timing.tone}`}>{timing.label}</span>
       </span>
       {milestone.activity && !detail && <span className="milestone-activity">Try: {milestone.activity}</span>}
     </span>
+    </>
   );
 }
